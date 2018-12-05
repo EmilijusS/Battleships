@@ -3,43 +3,17 @@ module Move where
 import Lib
 
 move :: String -> Either String (Maybe [String])
-move x =
-    let
-        moves =
-            case getMoveList x of
-            Left r -> Left r
-            Right r -> Right $ reverse r
-        end = 
-            case moves of
-            Left r -> Left r
-            Right r -> isGameEnd r
-        playerMoves = 
-            case moves of
-            Left r -> Left r
-            Right r -> Right $ splitList r
-        -- Even if game ended, these 2 must be called to validate moves
-        player1RemainingMoves =
-            case playerMoves of
-            Left r -> Left r
-            Right r -> getRemainingMoves $ fst r
-        player2RemainingMoves = 
-            case playerMoves of
-            Left r -> Left r
-            Right r -> getRemainingMoves $ snd r
-    in
-        case end of
-        Left e -> Left e
-        Right e ->
-            case player1RemainingMoves of
-            Left p1 -> Left p1
-            Right p1 ->
-                case player2RemainingMoves of
-                Left p2 -> Left p2
-                Right p2
-                    | e                      -> Right Nothing
-                    | null p1 && null p2     -> Left "It's impossible for both players to have no moves"
-                    | length p1 == length p2 -> Right $ Just [[head (head p1)], tail (head p1)]
-                    | otherwise              -> Right $ Just [[head (head p1)], tail (head p1)]
+move x = do
+    moves <- getMoveList x
+    end <- isGameEnd moves
+    let playerMoves = splitList moves
+    p1 <- getRemainingMoves $ fst playerMoves
+    p2 <- getRemainingMoves $ snd playerMoves
+    if end then Right Nothing else
+        if null p1 && null p2 then Left "It's impossible for both players to have no moves" else
+            if length p1 == length p2 then Right $ Just [[head (head p1)], tail (head p1)] else
+                Right $ Just [[head (head p2)], tail (head p2)]
+
 
 -- Gets a list of moves available for player at the given moment
 getRemainingMoves :: [String] -> Either String [String]

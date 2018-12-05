@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 89cca27711303b72f68468aea2d581f38fba96dc5755758c55e32c6bcb6e2c11
+-- hash: 2079a4ebf3150ba560d0947ebf7859a795f821b7555075d2b45ad47ff64c3821
 
 name:           Battleships
 version:        0.1.0.0
@@ -39,6 +39,7 @@ library
 executable Battleships-exe
   main-is: Main.hs
   other-modules:
+      Move
       Paths_Battleships
   hs-source-dirs:
       app
