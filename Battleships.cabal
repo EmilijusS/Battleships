@@ -1,0 +1,62 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.31.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 89cca27711303b72f68468aea2d581f38fba96dc5755758c55e32c6bcb6e2c11
+
+name:           Battleships
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/githubuser/Battleships#readme>
+homepage:       https://github.com/githubuser/Battleships#readme
+bug-reports:    https://github.com/githubuser/Battleships/issues
+author:         Author name here
+maintainer:     example@example.com
+copyright:      2018 Author name here
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    ChangeLog.md
+
+source-repository head
+  type: git
+  location: https://github.com/githubuser/Battleships
+
+library
+  exposed-modules:
+      Lib
+  other-modules:
+      Paths_Battleships
+  hs-source-dirs:
+      src
+  build-depends:
+      base >=4.7 && <5
+  default-language: Haskell2010
+
+executable Battleships-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_Battleships
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      Battleships
+    , base >=4.7 && <5
+  default-language: Haskell2010
+
+test-suite Battleships-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_Battleships
+  hs-source-dirs:
+      test
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      Battleships
+    , base >=4.7 && <5
+  default-language: Haskell2010
