@@ -14,174 +14,100 @@ move x = do
             if length p1 == length p2 then Right $ Just [[head (head p1)], tail (head p1)] else
                 Right $ Just [[head (head p2)], tail (head p2)]
 
-
 -- Gets a list of moves available for player at the given moment
 getRemainingMoves :: [String] -> Either String [String]
 getRemainingMoves [] = Right [x : show y | x <- ['A'..'J'], y <- [1..10]]
-getRemainingMoves (x:t) = 
-    if x == ""
-    then getRemainingMoves t
-    else
-        case getRemainingMoves t of
-        Left r -> Left "There are two identical moves" 
-        Right r -> removeFromList r x
+getRemainingMoves (x:t)
+    | x == ""   = getRemainingMoves t
+    | otherwise = getRemainingMoves t >>= removeFromList x 
 
 -- Removes provided item from the list
-removeFromList :: (Eq a) => [a] -> a -> Either String [a]
-removeFromList [] _ = Left "There are two identical moves"
-removeFromList (x:t) y = 
-    if x == y
-    then Right t
-    else
-        case removeFromList t y of
-        Left a -> Left a 
-        Right a -> Right $ x:a 
+removeFromList :: (Eq a) => a -> [a] -> Either String [a]
+removeFromList _ [] = Left "There are two identical moves"
+removeFromList y (x:t)
+    | x == y    = Right t
+    | otherwise = (x:) <$> removeFromList y t
 
 -- Determines whether the game has ended (and validates empty moves, because
 -- that wasn't validated in getMoveList)
 isGameEnd :: [String] -> Either String Bool
 isGameEnd [] = Right False
 isGameEnd [x] = Right $ x == ""
-isGameEnd (x:t) = 
-    if x == ""
-    then Left "There exists an empty move which is not the last one!"
-    else isGameEnd t
+isGameEnd (x:t)
+    | x == ""   = Left "There exists an empty move which is not the last one!"
+    | otherwise = isGameEnd t
 
 -- Splits a list into two on every second entry
 splitList :: [a] -> ([a], [a])
 splitList [] = ([], [])
-splitList (x:y:t) = 
-    let
-        (a, b) = splitList t
-    in
-        (x:a, y:b)
-splitList (x:t) = 
-    let
-        (a, b) = splitList t
-    in
-        (x:a, b)
+splitList (x:y:t) = (x:a, y:b)
+    where (a, b) = splitList t
+splitList (x:t) = (x:a, b)
+    where (a, b) = splitList t
 
 --Returns a list of moves made (and validates JSON in process)
 getMoveList :: String -> Either String [String]
-getMoveList x =  
-    let
-        insides = stripOuterBraces x
-        stripped = 
-            case insides of
-            Left r -> Left "Missing braces"
-            Right r -> stripStart r "\"coord\":{"
-        coordString = 
-            case stripped of
-            Left r -> Left "Missing ^\"coord\":{^"
-            Right r -> getUntilChar r '}'
-        coords = 
-            case coordString of
-            Left r -> Left "Missing closing brace"
-            Right r -> parseCoords r
-        remaining =
-            case stripped of
-            Left r -> Left "Missing ^\"coord\":{^" 
-            Right r -> getAfterChar r '}'
-        prev = 
-            case remaining of
-            Left r -> Left "Missing closing brace"
-            Right r -> getPrev r
-    in
-        case prev of
-        Left r -> Left r
-        Right r ->
-            case coords of
-            Left c -> Left c
-            Right c ->
-                if r == "null"
-                then Right [c]
-                else 
-                    case getMoveList r of
-                    Left a -> Left a
-                    Right a -> Right $ c:a 
-
+getMoveList x = do
+    insides <- stripOuterBraces x
+    stripped <- stripStart insides "\"coord\":{"
+    coordString <- getUntilChar stripped '}'
+    coords <- parseCoords coordString
+    remaining <- getAfterChar stripped '}'
+    prev <- getPrev remaining
+    if prev == "null" then Right [coords] else (coords:) <$> getMoveList prev
 
 -- Gets previous move and checks for errors
 getPrev :: String -> Either String String
-getPrev x = 
-    let
-        resultCut = stripStart x ",\"result\":"
-        result = 
-            case resultCut of
-            Left r -> Left "Missing ^,\"result\":^"
-            Right r -> getUntilChar r ','
-        prev = 
-            case resultCut of
-            Left r -> Left "Missing ^,\"result\":^"
-            Right r -> 
-                case getAfterChar r ',' of
-                -- I'm running out of letters :/
-                Left a -> Left "Missing a comma"
-                Right a -> stripStart a "\"prev\":"
-    in
-        case result of
-        Left r -> Left r
-        Right r -> 
-            case prev of
-            Left p -> Left "Missing ^\"prev\":^"
-            Right p -> 
-                if r == "\"HIT\"" || r == "\"MISS\"" || (r == "null" && p == "null")
-                then Right p
-                else Left "Incorrect result or nulls where they shouldn't be"
+getPrev x = do
+    resultCut <- stripStart x ",\"result\":"
+    result <- getUntilChar resultCut ','
+    remaining <- getAfterChar resultCut ','
+    prev <- stripStart remaining "\"prev\":" 
+    if result == "\"HIT\"" || result == "\"MISS\"" || (result == "null" && prev == "null")
+        then Right prev else Left "Incorrect result or nulls where they shouldn't be"
 
 -- Parses set for coordinates
 parseCoords :: String -> Either String String
-parseCoords ('\"':'1':'\"':':':'\"':letter:'\"':',':'\"':'2':'\"':':':'\"':digit:'\"':"") =
-    if elem digit ['1'..'9'] && elem letter ['A'..'J'] 
-    then Right $ letter : [digit] 
-    else Left "Some digit or letter in coordinates is wrong"
-parseCoords ('\"':'1':'\"':':':'\"':letter:'\"':',':'\"':'2':'\"':':':'\"':'1':'0':'\"':"") =
-    if letter `elem` ['A'..'J'] 
-    then Right $ letter : "10"
-    else Left "Some letter in coordinates is wrong"
-parseCoords ('\"':'2':'\"':':':'\"':digit:'\"':',':'\"':'1':'\"':':':'\"':letter:'\"':"") =
-    if elem digit ['1'..'9'] && elem letter ['A'..'J'] 
-    then Right $ letter : [digit] 
-    else Left "Some digit or letter in coordinates is wrong"
-parseCoords ('\"':'2':'\"':':':'\"':'1':'0':'\"':',':'\"':'1':'\"':':':'\"':letter:'\"':"") =
-    if letter `elem` ['A'..'J'] 
-    then Right $ letter : "10"
-    else Left "Some letter in coordinates is wrong"
+parseCoords ('\"':'1':'\"':':':'\"':letter:'\"':',':'\"':'2':'\"':':':'\"':digit:'\"':"")
+    | elem digit ['1'..'9'] && elem letter ['A'..'J'] = Right $ letter : [digit]
+    | otherwise = Left "Some digit or letter in coordinates is wrong"
+parseCoords ('\"':'1':'\"':':':'\"':letter:'\"':',':'\"':'2':'\"':':':'\"':'1':'0':'\"':"")
+    | letter `elem` ['A'..'J'] = Right $ letter : "10"
+    | otherwise = Left "Some letter in coordinates is wrong"
+parseCoords ('\"':'2':'\"':':':'\"':digit:'\"':',':'\"':'1':'\"':':':'\"':letter:'\"':"")
+    | elem digit ['1'..'9'] && elem letter ['A'..'J'] = Right $ letter : [digit]
+    | otherwise = Left "Some digit or letter in coordinates is wrong"
+parseCoords ('\"':'2':'\"':':':'\"':'1':'0':'\"':',':'\"':'1':'\"':':':'\"':letter:'\"':"")
+    | letter `elem` ['A'..'J'] = Right $ letter : "10"
+    | otherwise = Left "Some letter in coordinates is wrong"
 parseCoords "" = Right ""
 parseCoords _ = Left "Coordinate format is wrong"
 
 -- Gets content inside braces
 stripOuterBraces :: String -> Either String String
-stripOuterBraces x = 
-    if head x == '{' && last x == '}' 
-    then Right $ init $ tail x 
-    else Left "Missing braces"
+stripOuterBraces x
+    | head x == '{' && last x == '}' = Right $ init $ tail x 
+    | otherwise = Left "Missing braces"
 
 -- Checks if the beggining of the first string is the same as second string
 -- and returns first string with that beggining cut off    
 stripStart :: String -> String -> Either String String
 stripStart x [] = Right x
 stripStart [] _ = Left "Nothing left to strip"
-stripStart (x1:y1) (x2:y2) = 
-    if x1 == x2 
-    then stripStart y1 y2 
-    else Left "Start doesn't match"
+stripStart (x1:y1) (x2:y2)
+    | x1 == x2  = stripStart y1 y2 
+    | otherwise = Left "Start doesn't match"
 
 -- Cuts the beggining of the string until given character occurs    
 getUntilChar :: String -> Char -> Either String String
 getUntilChar [] _ = Left "Couldn't find character requested"
-getUntilChar (x:t) c = 
-    if x == c 
-    then Right [] 
-    else 
-        case getUntilChar t c of
-        Left result -> Left result
-        Right result -> Right $ x:result
+getUntilChar (x:t) c 
+    | x == c    = Right [] 
+    | otherwise = (x:) <$> getUntilChar t c
 
 -- Cuts the ending of the string after given character occurs
 getAfterChar :: String -> Char -> Either String String
 getAfterChar [] _ = Left "Couldn't find character requested"
-getAfterChar (x:t) c =
-    if x == c
-    then Right t
-    else getAfterChar t c
+getAfterChar (x:t) c
+    | x == c    = Right t
+    | otherwise = getAfterChar t c
