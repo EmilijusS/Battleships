@@ -1,6 +1,6 @@
-module Move where
-
-import Lib
+module Move 
+    ( move
+    ) where 
 
 move :: String -> Either String (Maybe [String])
 move x = do
