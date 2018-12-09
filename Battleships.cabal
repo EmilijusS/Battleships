@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 6ed6c59ec4c96b674f2249bb752d1298661fdf17a0f006be5e379cb6e450a19f
+-- hash: d2c93f97a2e75ac4eeb012386b2a6ceca41e8ae8e7c44c0279760dffe29aa40f
 
 name:           Battleships
 version:        0.1.0.0
@@ -27,6 +27,7 @@ source-repository head
 
 library
   exposed-modules:
+      ListMoves
       Move
   other-modules:
       Paths_Battleships
