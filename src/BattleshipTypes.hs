@@ -5,7 +5,7 @@ module BattleshipTypes
     , GameState(..)
     ) where 
 
-data SquareState = Hit | Miss | Empty deriving (Show, Eq)  
+data SquareState = HIT | MISS | EMPTY deriving (Show, Eq)  
 
 type MyShips = [String]
 type MyGuesses = [String]

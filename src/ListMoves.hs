@@ -4,6 +4,7 @@ module ListMoves
 
 --Returns a list of moves made (and validates JSON in process)
 getMoveList :: String -> Either String [String]
+getMoveList "" = Right []
 getMoveList x = do
     insides <- stripOuterBraces x
     stripped <- stripStart insides "\"coord\":{"

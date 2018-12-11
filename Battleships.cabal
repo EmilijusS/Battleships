@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 83d1b87b6a85d15c7bf4f48dbdd133d903b5aeb3f25812b9cce4d8d7e43d5936
+-- hash: 09256ba76873f67a0b02246a41bb750fda8f7faebb4517e8b9ba99e7285ebf24
 
 name:           Battleships
 version:        0.1.0.0
@@ -28,9 +28,9 @@ source-repository head
 library
   exposed-modules:
       BattleshipTypes
-      CheckEnemyMove
       ListMoves
       Move
+      PlayBattleships
   other-modules:
       Paths_Battleships
   hs-source-dirs:
@@ -38,6 +38,7 @@ library
   build-depends:
       base >=4.7 && <5
     , mtl
+    , transformers
   default-language: Haskell2010
 
 executable Battleships-exe
@@ -51,6 +52,7 @@ executable Battleships-exe
       Battleships
     , base >=4.7 && <5
     , mtl
+    , transformers
   default-language: Haskell2010
 
 test-suite Battleships-test
@@ -66,4 +68,5 @@ test-suite Battleships-test
     , HUnit
     , base >=4.7 && <5
     , mtl
+    , transformers
   default-language: Haskell2010
