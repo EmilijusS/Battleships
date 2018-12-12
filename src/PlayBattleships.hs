@@ -13,6 +13,10 @@ import ListMoves
 -- From JSON returns result and coords
 playBattleships :: String -> ExceptT String (State GameState) (Maybe [String], SquareState)
 playBattleships json = 
+    -- let moves = getMoveList json
+    -- let myMove = moves >>= move
+    -- let enemyMoveResult = checkEnemyMove <$> moves -- (this might not even work)
+    -- ?????
     case getMoveList json of
         Left moves -> throwE moves
         Right moves -> case move moves of
