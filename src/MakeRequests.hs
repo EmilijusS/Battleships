@@ -6,13 +6,16 @@ import Control.Monad.State.Lazy
 import Control.Monad.Trans.Except
 import Control.Monad.IO.Class
 import Network.HTTP
+import Network.HTTP.Headers
 
 import BattleshipTypes
 import PlayBattleships
 
 nameName :: GameState -> String -> ExceptT String IO String
 nameName gameState url = do
-    response <- liftIO $ simpleHTTP (getRequest url) >>= getResponseBody
+    response <- liftIO $
+        simpleHTTP ( (getRequest url) {rqHeaders = [Header HdrAccept "application/json+nolists"]} ) >>=
+             getResponseBody
     if response == "No move available at the moment" then nameName gameState url
     else do
         let (playResult ,newState) = runState (runExceptT $ playBattleships response) gameState

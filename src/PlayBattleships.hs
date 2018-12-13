@@ -1,5 +1,6 @@
 module PlayBattleships 
     ( playBattleships
+    , checkEnemyMove
     ) where 
 
 import Control.Monad.State.Lazy
@@ -25,9 +26,10 @@ playBattleships json =
                 enemyMoveResult <- lift $ checkEnemyMove moves
                 return (myMove, enemyMoveResult)
 
--- Provided last enemy move returns whether it was a 'hit' or 'miss'
+-- Provided enemy moves returns whether it was a 'hit' or 'miss'
 checkEnemyMove :: [String] -> State GameState SquareState
-checkEnemyMove [] = state $ \gameState -> (EMPTY, gameState)
+checkEnemyMove []       = state $ \gameState -> (NULL, gameState)
+checkEnemyMove ("":_)   = state $ \gameState -> (EMPTY, gameState)
 checkEnemyMove (move:_) = state $ \gameState ->
     let ships = myShips gameState in
         case find (== move) ships of
