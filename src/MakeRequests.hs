@@ -25,11 +25,11 @@ getGame gameState url = do
         let (playResult, newState) = runState (runExceptT $ playBattleships response) gameState
         case playResult of -- I don't want to write this!!!
             Left error -> throwE error
-            Right (coords, result) -> case coords of
-                Nothing -> return "Victory!"
-                Just justCoords -> if null $ myShips newState
-                    then postDefeat url response
-                    else postTurn newState url response justCoords result
+            Right (coords, result) 
+                | result == EMPTY         -> return "Victory!"
+                | null $ myShips newState -> postDefeat url response
+                | otherwise               -> postTurn newState url response coords result
+
 
 -- If we have to start the game, call this
 postStart :: GameState -> String -> ExceptT String IO String
@@ -37,28 +37,26 @@ postStart gameState url = do
     let (playResult, newState) = runState (runExceptT $ playBattleships "") gameState
     case playResult of -- I don't want to write this again!!!
         Left error -> throwE error -- This will never happen
-        Right (coord, result) -> case coord of
-            Nothing -> return "Victory!" -- This will never happen
-            Just justCoord -> do
-                let json = "{\"coord\":{\"1\":\"" ++ head justCoord ++ 
-                           "\",\"2\":\"" ++ last justCoord ++
+        Right (coord, result) -> do
+                let json = "{\"coord\":{\"1\":\"" ++ [head coord] ++ 
+                           "\",\"2\":\"" ++ tail coord ++
                            "\"},\"result\":null, \"prev\":null}"
-                nextTurn gameState url json justCoord result
+                nextTurn gameState url json coord result
 
 -- Posts our turn and prints it to console
-postTurn :: GameState -> String -> String -> [String] -> SquareState -> ExceptT String IO String
+postTurn :: GameState -> String -> String -> String -> SquareState -> ExceptT String IO String
 postTurn gameState url prev coord result = do
-    let json = "{\"coord\":{\"1\":\"" ++ head coord ++ 
-               "\",\"2\":\"" ++ last coord ++
+    let json = "{\"coord\":{\"1\":\"" ++ [head coord] ++ 
+               "\",\"2\":\"" ++ tail coord ++
                "\"},\"result\":\"" ++ show result ++
                "\",\"prev\":" ++ prev ++ "}"
     nextTurn gameState url json coord result
 
 -- TBH I only wrote this to get rid of red squigly lines
-nextTurn :: GameState -> String -> String -> [String] -> SquareState -> ExceptT String IO String
+nextTurn :: GameState -> String -> String -> String -> SquareState -> ExceptT String IO String
 nextTurn gameState url json coord result = do
     liftIO $ postJson url json
-    liftIO $ putStrLn $ concat coord ++ show result
+    liftIO $ putStrLn $ coord ++ " " ++ show result
     getGame gameState url
 
 -- Call this when you lose

@@ -1,7 +1,9 @@
 module Main where
 
-import System.Environment 
 import Control.Monad.Trans.Except
+import Data.Time.Clock.POSIX
+import System.Environment 
+import System.Random
 
 import BattleshipTypes
 import MakeRequests
@@ -10,15 +12,21 @@ main :: IO ()
 main = do
     args <- getArgs
     if null args then printArgs
-        else let 
-            url = head args
-            gameState = GameState {myShips = tail args, myGuesses = []}
-            in
-                if last url == 'A'
-                then runExceptT (postStart gameState url) >>= \x -> print x
-                    else if last url == 'B'
-                    then runExceptT (getGame gameState url) >>= \x -> print x
-                    else printArgs
+        else do
+            gameState <- generateState $ tail args
+            let url = head args
+            if last url == 'A'
+            then runExceptT (postStart gameState url) >>= \x -> print x
+                else if last url == 'B'
+                then runExceptT (getGame gameState url) >>= \x -> print x
+                else printArgs
+
+generateState :: [String] -> IO GameState
+generateState ships = do
+    seed <- fmap round getPOSIXTime
+    return GameState { myShips = ships 
+                     , myGuesses = [x : show y | x <- ['A'..'J'], y <- [1..10]]
+                     , randomGen = mkStdGen seed}
 
 printArgs :: IO ()
 printArgs = mapM_ putStrLn [
