@@ -1,5 +1,6 @@
 import Test.HUnit
 import Control.Monad.State.Lazy
+import System.Random
 
 import BattleshipTypes
 import PlayBattleships
@@ -10,7 +11,9 @@ main = do
     return ()
 
 getState :: GameState
-getState = GameState ["A1", "B10", "C3"] []
+getState = GameState { myShips = ["A4", "B10", "C9"] 
+                     , myGuesses = [x : show y | x <- ['A'..'J'], y <- [1..10]]
+                     , randomGen = mkStdGen 1 } 
 
 testCheckEnemyMoveNull = TestCase (assertEqual "When there are no moves" NULL $ evalState (checkEnemyMove []) getState)
 testCheckEnemyMoveHit = TestCase (assertEqual "When myShips contains enemy move" HIT $ evalState (checkEnemyMove ["B10", "C4"]) getState)

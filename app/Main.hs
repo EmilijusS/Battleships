@@ -26,7 +26,7 @@ generateState ships = do
     seed <- fmap round getPOSIXTime
     return GameState { myShips = ships 
                      , myGuesses = [x : show y | x <- ['A'..'J'], y <- [1..10]]
-                     , randomGen = mkStdGen seed}
+                     , randomGen = mkStdGen seed }
 
 printArgs :: IO ()
 printArgs = mapM_ putStrLn [
