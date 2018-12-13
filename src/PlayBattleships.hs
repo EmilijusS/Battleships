@@ -35,15 +35,3 @@ checkEnemyMove (move:_) = state $ \gameState ->
         case find (== move) ships of
             Nothing -> (MISS, gameState)
             Just s -> (HIT, gameState {myShips = delete s ships})
-
--- Checks if we lost
--- checkDefeat :: State GameState Bool
--- checkDefeat = state $ \gameState -> null $ myShips gameState
-
--- Provided a previous JSON, move and enemy shot result forms a new JSON to send
--- createJSON :: String -> [String] -> SquareState -> String
--- createJSON prev [] result = "{\"coord\":{},\"result\":\"" ++ show result ++ "\",\"prev\":" ++ prev ++ "}"
--- createJSON prev coord result = "{\"coord\":{\"1\":\"" ++ head coord ++ 
---                                "\",\"2\":\"" ++ tail coord ++
---                                "\"},\"result\":\"" ++ show result ++
---                                "\",\"prev\":" ++ prev ++ "}"
