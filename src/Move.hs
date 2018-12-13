@@ -5,11 +5,10 @@ module Move
 -- Returns next move from a list of both player moves
 move :: [String] -> Either String (Maybe [String])
 move moves = do
-    end <- isGameEnd moves
     let playerMoves = splitList moves
     p1 <- getRemainingMoves $ fst playerMoves
     p2 <- getRemainingMoves $ snd playerMoves
-    if end then Right Nothing else
+    if not (null moves) && head moves == "" then Right Nothing else
         if null p1 && null p2 then Left "It's impossible for both players to have no moves" else
             if length p1 == length p2 then Right $ Just [[head (head p1)], tail (head p1)] else
                 Right $ Just [[head (head p2)], tail (head p2)]
@@ -27,15 +26,6 @@ removeFromList _ [] = Left "There are two identical moves"
 removeFromList y (x:t)
     | x == y    = Right t
     | otherwise = (x:) <$> removeFromList y t
-
--- Determines whether the game has ended (and validates empty moves, because
--- that wasn't validated in getMoveList)
-isGameEnd :: [String] -> Either String Bool
-isGameEnd [] = Right False
-isGameEnd [x] = Right $ x == ""
-isGameEnd (x:t)
-    | x == ""   = Left "There exists an empty move which is not the last one!"
-    | otherwise = isGameEnd t
 
 -- Splits a list into two on every second entry
 splitList :: [a] -> ([a], [a])

@@ -1,5 +1,6 @@
 module MakeRequests 
     ( getGame
+    , postStart
     ) where
 
 import Control.Monad.State.Lazy
