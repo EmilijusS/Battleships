@@ -18,6 +18,7 @@ getGame gameState url = do
     response <- liftIO $
         simpleHTTP ( (getRequest url) {rqHeaders = [Header HdrAccept "application/json+nolists"]} ) >>=
              getResponseBody
+    -- liftIO $ putStrLn response
     if response == "No move available at the moment" 
     then liftIO (putStrLn "Waiting for response...") >> getGame gameState url
     else do
@@ -56,7 +57,7 @@ postTurn gameState url prev coord result = do
 -- TBH I only wrote this to get rid of red squigly lines
 nextTurn :: GameState -> String -> String -> [String] -> SquareState -> ExceptT String IO String
 nextTurn gameState url json coord result = do
-    liftIO $ postJson url json -- There's indeed duplication, but not here
+    liftIO $ postJson url json
     liftIO $ putStrLn $ concat coord ++ show result
     getGame gameState url
 

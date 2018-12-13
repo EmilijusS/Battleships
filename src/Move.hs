@@ -5,7 +5,7 @@ module Move
 -- Returns next move from a list of both player moves
 move :: [String] -> Either String (Maybe [String])
 move moves = do
-    let playerMoves = splitList moves
+    let playerMoves = splitList $ reverse moves
     p1 <- getRemainingMoves $ fst playerMoves
     p2 <- getRemainingMoves $ snd playerMoves
     if not (null moves) && head moves == "" then Right Nothing else
