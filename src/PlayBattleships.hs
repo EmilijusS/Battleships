@@ -40,7 +40,7 @@ makeMove = state $ \gameState -> do
     let guesses = myGuesses gameState
     let (index, newGen) = randomR (0, length guesses - 1) $ randomGen gameState
     let guess = guesses !! index
-    (guess, gameState { myGuesses = delete guess guesses})
+    (guess, gameState { myGuesses = delete guess guesses, randomGen = newGen })
 
 
 -- makeMove :: ExceptT String (State GameState) String

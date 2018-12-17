@@ -41,7 +41,7 @@ postStart gameState url = do
                 let json = "{\"coord\":{\"1\":\"" ++ [head coord] ++ 
                            "\",\"2\":\"" ++ tail coord ++
                            "\"},\"result\":null, \"prev\":null}"
-                nextTurn gameState url json coord result
+                nextTurn newState url json coord result
 
 -- Posts our turn and prints it to console
 postTurn :: GameState -> String -> String -> String -> SquareState -> ExceptT String IO String
